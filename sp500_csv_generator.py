@@ -27,6 +27,6 @@ for row in rows[1:]:
 driver.quit()
 
 df = pd.DataFrame(symbols, columns=['Symbol'])
-df.to_csv('sp500_symbols.csv', index=False, header=False)
+df.to_csv('sp500_symbols.csv', index=False)
 
 print("CSV file 'sp500_symbols.csv' created successfully!")
