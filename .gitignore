@@ -2,3 +2,5 @@
 .ipynb_checkpoints
 __pycache__
 recommended_trades.xlsx
+momentum_strategy.xlsx
+equal.py
