@@ -61,6 +61,8 @@ def quantitative_value(symbols_file, portfolio_size):
 
     financial_df.dropna(subset=['Price', 'PE Ratio', 'PB Ratio', 'PS Ratio', 'EV/EBITDA', 'EV/GP'], how='all', inplace=True)
 
+    print(financial_df)
+
     for column in ['PE Ratio', 'PB Ratio', 'PS Ratio', 'EV/EBITDA', 'EV/GP']:
         if column in financial_df.columns:
             financial_df[column] = financial_df[column].fillna(financial_df[column].mean())
@@ -68,6 +70,8 @@ def quantitative_value(symbols_file, portfolio_size):
 
     ev_gp_mean = financial_df['EV/GP'].mean()
     financial_df['EV/GP'] = financial_df['EV/GP'].fillna(ev_gp_mean)
+
+    print(financial_df)
 
     metrics = {
         'PE Ratio': 'PE Percentile',
@@ -89,9 +93,13 @@ def quantitative_value(symbols_file, portfolio_size):
             row['EV/GP Percentile']
         ]
         financial_df.at[index, 'RV Score'] = mean(value_percentiles)
+    
+    print(financial_df)
 
     financial_df.sort_values(by='RV Score', inplace=True)
     top_50_stocks = financial_df.head(50).reset_index(drop=True)
+
+    print(top_50_stocks)
 
     position_size = portfolio_size / len(top_50_stocks.index)
 
@@ -107,3 +115,8 @@ def quantitative_value(symbols_file, portfolio_size):
 
     top_50_stocks.to_excel('value_strategy.xlsx', index=False)
     print("Trades saved to value_strategy.xlsx")
+
+    return top_50_stocks
+# symbols_file = 'data/sp500_symbols.csv'
+# portfolio_size = input("Enter the value of your portfolio: ")
+# quantitative_value(symbols_file, int(portfolio_size))

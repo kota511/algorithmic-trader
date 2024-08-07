@@ -137,3 +137,8 @@ def quantitative_momentum(symbols_file, portfolio_size):
 
     hqm_dataframe.to_excel('momentum_strategy.xlsx', index=False)
     print("Trades saved to momentum_strategy.xlsx")
+
+    return hqm_dataframe
+# symbols_file = 'data/sp500_symbols.csv'
+# portfolio_size = input("Enter the value of your portfolio: ")
+# quantitative_momentum(symbols_file, int(portfolio_size))

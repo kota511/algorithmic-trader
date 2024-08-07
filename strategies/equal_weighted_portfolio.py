@@ -54,16 +54,6 @@ def equal_weighted_portfolio(symbols_file, portfolio_size):
     plt.ylabel('Cumulative Returns')
     plt.show()
 
-    risk_free_rate = 0.01
-    excess_returns = portfolio_returns - (risk_free_rate / 252)
-    sharpe_ratio = excess_returns.mean() / excess_returns.std() * np.sqrt(252)
-    print(f"Sharpe Ratio: {sharpe_ratio}")
-
-    rolling_max = cumulative_returns.cummax()
-    drawdown = (cumulative_returns - rolling_max) / rolling_max
-    max_drawdown = drawdown.min()
-    print(f"Max Drawdown: {max_drawdown}")
-
     position_size = portfolio_size / len(final_dataframe.index)
     for i in range(len(final_dataframe)):
         final_dataframe.loc[i, 'Number Of Shares to Buy'] = math.floor(position_size / final_dataframe['Price'][i])
@@ -71,3 +61,9 @@ def equal_weighted_portfolio(symbols_file, portfolio_size):
 
     final_dataframe.to_excel('recommended_trades.xlsx', index=False)
     print("Trades saved to recommended_trades.xlsx")
+
+    return final_dataframe
+
+# symbols_file = 'data/sp500_symbols.csv'
+# portfolio_size = input("Enter the value of your portfolio: ")
+# equal_weighted_portfolio(symbols_file, int(portfolio_size))
