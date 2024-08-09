@@ -2,7 +2,7 @@
 /venv
 .ipynb_checkpoints
 __pycache__
-**/recommended_trades.xlsx
+**/equal_weighted_portfolio.xlsx
 **/momentum_strategy.xlsx
 **/value_strategy.xlsx
 **/trade_log_equal_weighted.xlsx
