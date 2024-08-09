@@ -22,8 +22,8 @@ from simulations.quant_momentum_sim import quantitative_momentum
 from simulations.quant_value_sim import quantitative_value
 
 if __name__ == "__main__":
-    symbols_file = 'data/sp500_symbols.csv'  # Adjust the path as necessary
-    portfolio_size = 1000000  # Set your portfolio size as an integer
+    symbols_file = 'data/sp500_symbols.csv'
+    portfolio_size = 1000000
 
     training_period = ('2022-01-01', '2023-01-01')
     testing_period = ('2023-01-01', '2024-01-01')
@@ -37,5 +37,5 @@ if __name__ == "__main__":
     print("Running Quantitative Momentum Strategy...")
     momentum_portfolio = backtest_strategy(quantitative_momentum, symbols_file, training_period, testing_period, portfolio_size, stop_loss, take_profit)
 
-    # print("Running Quantitative Value Strategy...")
-    # value_portfolio = backtest_strategy(quantitative_value, symbols_file, training_period, testing_period, portfolio_size, stop_loss, take_profit)
+    print("Running Quantitative Value Strategy...")
+    value_portfolio = backtest_strategy(quantitative_value, symbols_file, training_period, testing_period, portfolio_size, stop_loss, take_profit)

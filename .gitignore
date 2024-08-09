@@ -7,3 +7,4 @@ __pycache__
 **/value_strategy.xlsx
 **/trade_log_equal_weighted.xlsx
 **/trade_log_momentum_strategy.xlsx
+**/trade_log_value_strategy.xlsx
