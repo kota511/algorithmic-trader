@@ -7,11 +7,15 @@ from simulations.equal_weighted_sim import equal_weighted_portfolio_sim
 from simulations.quant_momentum_sim import quantitative_momentum_sim
 from simulations.quant_value_sim import quantitative_value_sim
 
+# Define the functions to run the strategies and simulations
 def run_strategy(choice):
     symbols_file = 'data/sp500_symbols.csv'
     while True:
         try:
             portfolio_size = int(input("Enter the value of your portfolio: "))
+            if portfolio_size < 10000:
+                print("Minimum portfolio size should be $10,000. Please enter a larger amount.")
+                continue
             break
         except ValueError:
             print("Invalid input. Please enter a valid number.")
@@ -31,6 +35,9 @@ def run_simulation(choice):
     while True:
         try:
             portfolio_size = int(input("Enter the value of your portfolio: "))
+            if portfolio_size < 10000:
+                print("Minimum portfolio size should be $10,000. Please enter a larger amount.")
+                continue
             break
         except ValueError:
             print("Invalid input. Please enter a valid number.")
@@ -38,19 +45,20 @@ def run_simulation(choice):
     training_period = ('2022-01-01', '2023-01-01')
     testing_period = ('2023-01-01', '2024-01-01')
 
-    stop_loss = 0.1
-    take_profit = 0.2
+    stop_loss = 0.18
+    take_profit = 0.25
 
     if choice == 'Equal-Weighted Portfolio Simulation':
         print("Running Equal-Weighted Portfolio Simulation...")
-        backtest_strategy(equal_weighted_portfolio_sim, symbols_file, training_period, testing_period, portfolio_size, stop_loss, take_profit)
+        backtest_strategy(equal_weighted_portfolio_sim, symbols_file, portfolio_size, training_period, testing_period, stop_loss, take_profit)
     elif choice == 'Quantitative Momentum Simulation':
         print("Running Quantitative Momentum Simulation...")
-        backtest_strategy(quantitative_momentum_sim, symbols_file, training_period, testing_period, portfolio_size, stop_loss, take_profit)
+        backtest_strategy(quantitative_momentum_sim, symbols_file, portfolio_size, training_period, testing_period, stop_loss, take_profit)
     elif choice == 'Quantitative Value Simulation':
         print("Running Quantitative Value Simulation...")
-        backtest_strategy(quantitative_value_sim, symbols_file, training_period, testing_period, portfolio_size, stop_loss, take_profit)
+        backtest_strategy(quantitative_value_sim, symbols_file, portfolio_size, training_period, testing_period, stop_loss, take_profit)
 
+# Main menu to select the type of execution
 if __name__ == "__main__":
     main_menu = [
         inquirer.List(
