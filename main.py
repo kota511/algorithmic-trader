@@ -34,8 +34,8 @@ if __name__ == "__main__":
     print("Running Equal-Weighted Portfolio Strategy...")
     eq_portfolio = backtest_strategy(equal_weighted_portfolio, symbols_file, training_period, testing_period, portfolio_size, stop_loss, take_profit)
 
-    # print("Running Quantitative Momentum Strategy...")
-    # momentum_portfolio = backtest_strategy(quantitative_momentum, symbols_file, training_period, testing_period, portfolio_size, stop_loss, take_profit)
+    print("Running Quantitative Momentum Strategy...")
+    momentum_portfolio = backtest_strategy(quantitative_momentum, symbols_file, training_period, testing_period, portfolio_size, stop_loss, take_profit)
 
     # print("Running Quantitative Value Strategy...")
     # value_portfolio = backtest_strategy(quantitative_value, symbols_file, training_period, testing_period, portfolio_size, stop_loss, take_profit)
