@@ -6,7 +6,7 @@ from statistics import mean
 from scipy import stats
 import math
 
-def quantitative_momentum(symbols_file, training_period, testing_period, portfolio_size, stop_loss, take_profit):
+def quantitative_momentum_sim(symbols_file, training_period, testing_period, portfolio_size, stop_loss, take_profit):
     symbols = pd.read_csv(symbols_file, skiprows=1, header=None)[0].tolist()
 
     def chunks(lst, n):

@@ -4,7 +4,7 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import math
 
-def equal_weighted_portfolio(symbols_file, training_period, testing_period, initial_portfolio_size, stop_loss, take_profit):
+def equal_weighted_portfolio_sim(symbols_file, training_period, testing_period, initial_portfolio_size, stop_loss, take_profit):
     symbols = pd.read_csv(symbols_file, skiprows=1, header=None)[0].tolist()
 
     all_data = {}

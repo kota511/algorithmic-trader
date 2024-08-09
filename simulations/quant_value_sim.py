@@ -5,7 +5,7 @@ from statistics import mean
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import math
 
-def quantitative_value(symbols_file, training_period, testing_period, portfolio_size, stop_loss, take_profit):
+def quantitative_value_sim(symbols_file, training_period, testing_period, portfolio_size, stop_loss, take_profit):
     symbols = pd.read_csv(symbols_file)
     if 'Symbol' in symbols.columns:
         symbols.rename(columns={'Symbol': 'Ticker'}, inplace=True)
