@@ -5,6 +5,7 @@ from scipy import stats
 from statistics import mean
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import math
+import xlsxwriter
 
 def quantitative_value(symbols_file, portfolio_size):
     symbols = pd.read_csv(symbols_file)
@@ -21,6 +22,7 @@ def quantitative_value(symbols_file, portfolio_size):
         ps_ratio = data.get('priceToSalesTrailing12Months')
         ev = data.get('enterpriseValue')
         ebitda = data.get('ebitda')
+        # Using gross margin and total revenue as alternative to gross profit as it is not available
         gross_margin = data.get('grossMargins')
         total_revenue = data.get('totalRevenue')
         
@@ -42,6 +44,7 @@ def quantitative_value(symbols_file, portfolio_size):
             'EV/GP': ev_gp
         }
 
+    # Fetch data concurrently
     def fetch_data_concurrently(tickers):
         financial_data = []
         with ThreadPoolExecutor(max_workers=10) as executor:
@@ -59,6 +62,7 @@ def quantitative_value(symbols_file, portfolio_size):
     financial_data = fetch_data_concurrently(tickers)
     financial_df = pd.DataFrame(financial_data)
 
+    # Remove rows with all information missing
     financial_df.dropna(subset=['Price', 'PE Ratio', 'PB Ratio', 'PS Ratio', 'EV/EBITDA', 'EV/GP'], how='all', inplace=True)
 
     print(financial_df)
@@ -113,7 +117,81 @@ def quantitative_value(symbols_file, portfolio_size):
     ]
     top_50_stocks = top_50_stocks[ordered_columns]
 
-    top_50_stocks.to_excel('value_strategy.xlsx', index=False)
+    writer = pd.ExcelWriter('value_strategy.xlsx', engine='xlsxwriter')
+    top_50_stocks.to_excel(writer, sheet_name='Value Strategy', index=False)
+
+    workbook = writer.book
+    worksheet = writer.sheets['Value Strategy']
+
+    background_color = '#ffffff'
+    font_color = '#000000'
+
+    string_template = workbook.add_format(
+        {
+            'font_color': font_color,
+            'bg_color': background_color,
+            'border': 1
+        }
+    )
+
+    dollar_template = workbook.add_format(
+        {
+            'num_format': '$0.00',
+            'font_color': font_color,
+            'bg_color': background_color,
+            'border': 1
+        }
+    )
+
+    integer_template = workbook.add_format(
+        {
+            'num_format': '0',
+            'font_color': font_color,
+            'bg_color': background_color,
+            'border': 1
+        }
+    )
+
+    float_template = workbook.add_format(
+        {
+            'num_format': '0.0',
+            'font_color': font_color,
+            'bg_color': background_color,
+            'border': 1
+        }
+    )
+
+    percent_template = workbook.add_format(
+        {
+            'num_format': '0.0%',
+            'font_color': font_color,
+            'bg_color': background_color,
+            'border': 1
+        }
+    )
+
+    column_formats = {
+        'A': ['Ticker', string_template],
+        'B': ['Price', dollar_template],
+        'C': ['Number of Shares to Buy', integer_template],
+        'D': ['Price-to-Earnings Ratio', float_template],
+        'E': ['PE Percentile', percent_template],
+        'F': ['Price-to-Book Ratio', float_template],
+        'G': ['PB Percentile', percent_template],
+        'H': ['Price-to-Sales Ratio', float_template],
+        'I': ['PS Percentile', percent_template],
+        'J': ['EV/EBITDA', float_template],
+        'K': ['EV/EBITDA Percentile', percent_template],
+        'L': ['EV/GP', float_template],
+        'M': ['EV/GP Percentile', percent_template],
+        'N': ['RV Score', percent_template]
+    }
+
+    for column in column_formats.keys():
+        worksheet.set_column(f'{column}:{column}',20, column_formats[column][1])
+        worksheet.write(f'{column}1', column_formats[column][0], column_formats[column][1])
+
+    writer.close()
     print("Trades saved to value_strategy.xlsx")
 
     return top_50_stocks

@@ -4,6 +4,7 @@ import yfinance as yf
 from statistics import mean
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import math
+import xlsxwriter
 
 def quantitative_value_sim(symbols_file, training_period, testing_period, portfolio_size, stop_loss, take_profit):
     symbols = pd.read_csv(symbols_file)
@@ -21,6 +22,7 @@ def quantitative_value_sim(symbols_file, training_period, testing_period, portfo
             ps_ratio = stock.info.get('priceToSalesTrailing12Months')
             ev = stock.info.get('enterpriseValue')
             ebitda = stock.info.get('ebitda')
+            # Using gross margin and total revenue as alternative to gross profit as it is not available    
             gross_margin = stock.info.get('grossMargins')
             total_revenue = stock.info.get('totalRevenue')
             
@@ -44,6 +46,7 @@ def quantitative_value_sim(symbols_file, training_period, testing_period, portfo
         else:
             return None
 
+    # Fetch data concurrently
     def fetch_data_concurrently(tickers, start_date, end_date):
         financial_data = []
         with ThreadPoolExecutor(max_workers=10) as executor:
@@ -64,6 +67,7 @@ def quantitative_value_sim(symbols_file, training_period, testing_period, portfo
     
     print(f"Total number of stocks fetched: {len(financial_df)}", flush=True)
     
+    # Remove rows with all information missing
     financial_df.dropna(subset=['Price', 'PE Ratio', 'PB Ratio', 'PS Ratio', 'EV/EBITDA', 'EV/GP'], how='all', inplace=True)
     
     print(f"Total number of stocks after dropping missing data: {len(financial_df)}", flush=True)
@@ -98,6 +102,7 @@ def quantitative_value_sim(symbols_file, training_period, testing_period, portfo
     
     print(f"Total number of stocks selected: {len(top_50_stocks)}", flush=True)
 
+    initial_portfolio_value = portfolio_size
     position_size = portfolio_size / len(top_50_stocks.index)
     results = []
 
@@ -125,11 +130,13 @@ def quantitative_value_sim(symbols_file, training_period, testing_period, portfo
             sell_price = stock_data['Close'].iloc[-1]
         
         profit = (sell_price - buy_price) * shares_to_buy
+        pnl = sell_price - buy_price
         results.append({
             'Ticker': ticker,
             'Buy Price': buy_price,
             'Sell Price': sell_price,
             'Shares': shares_to_buy,
+            'PnL': pnl,
             'Profit': profit,
             'PE Ratio': row['PE Ratio'],
             'PB Ratio': row['PB Ratio'],
@@ -142,10 +149,77 @@ def quantitative_value_sim(symbols_file, training_period, testing_period, portfo
     results_df = pd.DataFrame(results)
     
     total_profit = results_df['Profit'].sum()
+    final_portfolio_value = initial_portfolio_value + total_profit
 
-    print("Total Profit: ${:.2f}".format(total_profit), flush=True)
+    print(f"Initial Portfolio Value: ${initial_portfolio_value}", flush=True)
+    print(f"Overall PnL: ${round(total_profit, 2)}", flush=True)
+    print(f"Final Portfolio Value: ${round(final_portfolio_value, 2)}", flush=True)
 
-    results_df.to_excel('trade_log_value_strategy.xlsx', index=False)
+    # Save results to Excel with formatting
+    writer = pd.ExcelWriter('trade_log_value_strategy.xlsx', engine='xlsxwriter')
+    results_df.to_excel(writer, sheet_name='Trade Log', index=False)
+
+    workbook = writer.book
+    worksheet = writer.sheets['Trade Log']
+
+    background_color = '#ffffff'
+    font_color = '#000000'
+
+    string_template = workbook.add_format(
+        {
+            'font_color': font_color,
+            'bg_color': background_color,
+            'border': 1
+        }
+    )
+
+    dollar_template = workbook.add_format(
+        {
+            'num_format': '$0.00',
+            'font_color': font_color,
+            'bg_color': background_color,
+            'border': 1
+        }
+    )
+
+    integer_template = workbook.add_format(
+        {
+            'num_format': '0',
+            'font_color': font_color,
+            'bg_color': background_color,
+            'border': 1
+        }
+    )
+
+    float_template = workbook.add_format(
+        {
+            'num_format': '0.0',
+            'font_color': font_color,
+            'bg_color': background_color,
+            'border': 1
+        }
+    )
+
+    column_formats = {
+        'A': ['Ticker', string_template],
+        'B': ['Buy Price', dollar_template],
+        'C': ['Sell Price', dollar_template],
+        'D': ['Shares', integer_template],
+        'E': ['PnL', dollar_template],
+        'F': ['Profit', dollar_template],
+        'G': ['PE Ratio', float_template],
+        'H': ['PB Ratio', float_template],
+        'I': ['PS Ratio', float_template],
+        'J': ['EV/EBITDA', float_template],
+        'K': ['EV/GP', float_template],
+        'L': ['RV Score', float_template]
+    }
+
+    for column in column_formats.keys():
+        worksheet.set_column(f'{column}:{column}', 10, column_formats[column][1])
+        worksheet.write(f'{column}1', column_formats[column][0], column_formats[column][1])
+
+    writer.close()
     print("Trade log saved to trade_log_value_strategy.xlsx", flush=True)
 
-    return results_df, total_profit
+    return results_df, total_profit, final_portfolio_value
