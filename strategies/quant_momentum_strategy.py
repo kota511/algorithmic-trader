@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from statistics import mean
 from scipy import stats
 import math
+import xlsxwriter
 
 def quantitative_momentum(symbols_file, portfolio_size):
     symbols = pd.read_csv(symbols_file, skiprows=1, header=None)[0].tolist()
@@ -16,6 +17,7 @@ def quantitative_momentum(symbols_file, portfolio_size):
     symbol_groups = list(chunks(symbols, 100))
     symbol_strings = [' '.join(group) for group in symbol_groups]
 
+    # Define columns for the DataFrame
     hqm_columns = [
         'Ticker',
         'Price',
@@ -66,6 +68,7 @@ def quantitative_momentum(symbols_file, portfolio_size):
 
     print(hqm_dataframe)
 
+    # Calculate the percentile scores for each time period
     time_periods = [
         'One-Year',
         'Six-Month',
@@ -90,6 +93,7 @@ def quantitative_momentum(symbols_file, portfolio_size):
 
     print(hqm_dataframe)
 
+    # Select the 50 best momentum stocks
     hqm_dataframe.sort_values(by='HQM Score', ascending=False, inplace=True)
     hqm_dataframe = hqm_dataframe[:50]
     hqm_dataframe.reset_index(drop=True, inplace=True)
@@ -135,7 +139,51 @@ def quantitative_momentum(symbols_file, portfolio_size):
     fig.tight_layout()
     plt.show()
 
-    hqm_dataframe.to_excel('momentum_strategy.xlsx', index=False)
+    writer = pd.ExcelWriter('momentum_strategy.xlsx', engine='xlsxwriter')
+    hqm_dataframe.to_excel(writer, sheet_name='Momentum Strategy', index=False)
+
+    # Set formatting options
+    string_template = writer.book.add_format(
+    {'font_color': '#000000', 'bg_color': '#ffffff', 'border': 1}
+    )
+
+    dollar_template = writer.book.add_format(
+        {'num_format': '$0.00', 'font_color': '#000000', 'bg_color': '#ffffff', 'border': 1}
+    )
+
+    integer_template = writer.book.add_format(
+        {'num_format': '0', 'font_color': '#000000', 'bg_color': '#ffffff', 'border': 1}
+    )
+
+    percent_template = writer.book.add_format(
+        {'num_format': '0.0%', 'font_color': '#000000', 'bg_color': '#ffffff', 'border': 1}
+    )
+
+    float_template = writer.book.add_format(
+        {'num_format': '0.00', 'font_color': '#000000', 'bg_color': '#ffffff', 'border': 1}
+    )
+
+    column_formats = {
+        'A': ['Ticker', string_template],
+        'B': ['Price', dollar_template],
+        'C': ['Number of Shares to Buy', integer_template],
+        'D': ['One-Year Price Return', percent_template],
+        'E': ['One-Year Return Percentile', percent_template],
+        'F': ['Six-Month Price Return', percent_template],
+        'G': ['Six-Month Return Percentile', percent_template],
+        'H': ['Three-Month Price Return', percent_template],
+        'I': ['Three-Month Return Percentile', percent_template],
+        'J': ['One-Month Price Return', percent_template],
+        'K': ['One-Month Return Percentile', percent_template],
+        'L': ['HQM Score', float_template]
+    }
+
+    for column in column_formats.keys():
+        writer.sheets['Momentum Strategy'].set_column(f'{column}:{column}', 20, column_formats[column][1])
+        writer.sheets['Momentum Strategy'].write(f'{column}1', column_formats[column][0], string_template)
+
+    writer.close()
+
     print("Trades saved to momentum_strategy.xlsx")
 
     return hqm_dataframe
