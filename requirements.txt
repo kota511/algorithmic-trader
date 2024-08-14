@@ -6,3 +6,4 @@ xlsxwriter
 scipy
 inquirer
 selenium
+notebook
